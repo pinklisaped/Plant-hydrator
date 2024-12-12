@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFi Wizard</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Connect to WiFi</h1>
+        <form id="wifiForm">
+            <div class="form-group">
+                <label for="ssid">SSID:</label>
+                <div id="networks">Scanning...</div>
+            </div>
+            <div class="input-group">
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" placeholder="Enter WiFi password">
+            </div>
+            <button type="submit">Save</button>
+        </form>
+    </div>
+
+    <script>
+        function fetchNetworks() {
+            fetch('/scan_wifi').then(res => res.json()).then(data => {
+                if (data.status === 'in_progress') {
+                    document.getElementById('networks').innerHTML = "Scanning in progress... Please wait.";
+                    setTimeout(fetchNetworks, 2000);
+                } else if (data.status === 'done') {
+                    console.log("Scan complete!");
+                    let networks = data.networks;
+                    let options = '<select name="ssid">';
+                    networks.forEach(network => {
+                        options += `<option value="${network.ssid}">${network.ssid} (${network.rssi} dBm)</option>`;
+                    });
+                    options += '</select>';
+                    document.getElementById('networks').innerHTML = options;
+                } else {
+                    console.error("Scan failed!");
+                    showPopup("⚠️ Scan failed!");
+                }
+            }).catch(error => {
+                console.error("Error fetching networks:", error);
+                showPopup("⚠️ Error fetching networks!");
+            });
+        }
+
+        document.getElementById("wifiForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            let formData = new FormData(event.target);
+            let jsonData = {};
+            formData.forEach((value, key) => jsonData[key] = value);
+
+            try {
+                let response = await fetch('/save_wifi', {
+                    method: "POST",
+                    body: new URLSearchParams(jsonData),
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+                });
+
+                let resultText = await response.text();
+                showPopup(resultText || "✅ WiFi settings saved!");
+            } catch (error) {
+                console.error("Error saving WiFi settings:", error);
+                showPopup("⚠️ Error saving WiFi settings!");
+            }
+        });
+
+        function showPopup(message) {
+            let popup = document.createElement("div");
+            popup.className = "popup";
+            popup.textContent = message;
+            document.body.appendChild(popup);
+
+            setTimeout(() => {
+                popup.style.opacity = "0";
+                setTimeout(() => popup.remove(), 500);
+            }, 2000);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('/start_scan').then(() => fetchNetworks());
+        });
+    </script>
+</body>
+
+</html>

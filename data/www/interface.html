@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydration config</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Configuration</h1>
+        <form method="POST" action="/save_config">
+            <div class="form-group">
+                <label for="interval">Interval:</label>
+                <select name="interval" id="interval">
+                    <option value="30">30 minutes</option>
+                    <option value="60">1 hour</option>
+                    <option value="120">2 hours</option>
+                    <option value="240">4 hours</option>
+                    <option value="720">12 hours</option>
+                    <option value="1080">18 hours</option>
+                    <option value="1440" selected>1 day (24h)</option>
+                    <option value="2160">1.5 days (36h)</option>
+                    <option value="2880">2 days (48h)</option>
+                    <option value="3600">2.5 days (60h)</option>
+                    <option value="4320">3 days (72h)</option>
+                    <option value="5040">3.5 days (84h)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="duration">Duration (seconds):</label>
+                <input type="number" name="duration" id="duration" min="5" max="65535" value="10"
+                    placeholder="Hydration duration" required>
+            </div>
+            <button type="submit">Save</button>
+        </form>
+    </div>
+
+    <script>
+        async function loadConfig() {
+            try {
+                let response = await fetch('/get_config');
+                if (!response.ok) throw new Error("Failed to load config");
+                let data = await response.json();
+                document.getElementById('interval').value = data.interval || "1440";
+                document.getElementById('duration').value = data.duration || "10";
+            } catch (error) {
+                console.error("Error loading config:", error);
+                showPopup("⚠️ The device doesn`t have any config!");
+            }
+        }
+
+        document.querySelector("form").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            let formData = new FormData(event.target);
+            let jsonData = {};
+            formData.forEach((value, key) => jsonData[key] = value);
+
+            try {
+                let response = await fetch('/save_config', {
+                    method: "POST",
+                    body: new URLSearchParams(jsonData),
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+                });
+
+                let resultText = await response.text();
+                showPopup(resultText || "✅ Настройки сохранены!");
+            } catch (error) {
+                console.error("Error saving config:", error);
+                showPopup("⚠️ Ошибка сохранения!");
+            }
+        });
+
+        function showPopup(message) {
+            let popup = document.createElement("div");
+            popup.className = "popup";
+            popup.textContent = message;
+            document.body.appendChild(popup);
+
+            setTimeout(() => {
+                popup.style.opacity = "0";
+                setTimeout(() => popup.remove(), 1000);
+            }, 3000);
+        }
+
+        window.onload = loadConfig;
+    </script>
+</body>
+
+</html>
