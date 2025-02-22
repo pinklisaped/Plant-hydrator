@@ -5,6 +5,12 @@
 #include <IPAddress.h>
 #include <settings.h>
 
+struct WiFiNetwork
+{
+    String ssid;
+    int rssi;
+};
+
 void enableAPMode(const IPAddress &address = DEVICE_GATEWAY_IP);
 void beginConnectWiFi(const String &ssid, const String &password, bool reboot = false);
 bool endConnectWiFi();

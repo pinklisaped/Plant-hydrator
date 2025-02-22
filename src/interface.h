@@ -4,9 +4,9 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 
-bool isConfigExists;
 void startInterface(AsyncWebServer &server);
 void saveDeviceConfig(const String &interval, const String &duration);
-void loadDeviceConfig();
+bool deleteDeviceConfig();
+bool loadDeviceConfig();
 
 #endif // INTERFACE_H

@@ -1,11 +1,12 @@
 #include <Arduino.h>
 #include <Hash.h>
 #include <IPAddress.h>
+#include <settings.h>
 
 IPAddress DEVICE_GATEWAY_IP(10, 0, 0, 1);
-uint16_t INTERVAL_SEC = 1440;
-uint16_t DURATION_SEC = 10;
-bool DEVICE_CONFIGURED = false;
+uint32_t SPILL_INTERVAL_SEC = 86400;
+uint16_t SPILL_DURATION_SEC = 10;
+ConfigState DEVICE_CONFIGURED = ConfigState::UNCONFIGURED;
 
 String getWifiPassword(const String &input, const String &salt, int length)
 {

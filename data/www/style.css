@@ -7,6 +7,7 @@ body {
     align-items: center;
     height: 100vh;
     background-color: #f8f9fa;
+    flex-direction: column;
 }
 .container {
     max-width: 400px;
@@ -23,6 +24,24 @@ body {
 .input-group {
     margin-bottom: 15px;
     padding-right: 22px;
+}
+.form-spill {
+    text-align: right;
+}
+.form-spill button {
+    width:22%;
+    background-color:#ffae00;
+}
+.form-spill button:hover {
+    background-color: #bb8000;
+}
+.serial {
+    text-align: left;
+    margin-top: 5px;
+    font-size: 14px;
+    color:#b4b4b4;
+    max-width: 400px;
+    width: 90%;
 }
 label {
     font-weight: bold;
@@ -45,7 +64,7 @@ button {
     border: none;
 }
 button:hover {
-    background-color: #218838;
+    background-color: #004da0;
 }
 h1 {
     font-size: 24px;

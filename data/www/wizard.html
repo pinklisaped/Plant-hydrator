@@ -20,10 +20,12 @@
                 <label for="password">Password:</label>
                 <input type="password" name="password" id="password" placeholder="Enter WiFi password">
             </div>
-            <button type="submit">Save</button>
+            <button type="submit">Save 💾</button>
         </form>
     </div>
+    <div id="serial" class="serial">N/A</div>
 
+    <script src="common.js"></script>
     <script>
         function fetchNetworks() {
             fetch('/scan_wifi').then(res => res.json()).then(data => {
@@ -71,18 +73,7 @@
             }
         });
 
-        function showPopup(message) {
-            let popup = document.createElement("div");
-            popup.className = "popup";
-            popup.textContent = message;
-            document.body.appendChild(popup);
-
-            setTimeout(() => {
-                popup.style.opacity = "0";
-                setTimeout(() => popup.remove(), 500);
-            }, 2000);
-        }
-
+        window.addEventListener('load', loadSerial, false);
         document.addEventListener("DOMContentLoaded", function () {
             fetch('/start_scan').then(() => fetchNetworks());
         });

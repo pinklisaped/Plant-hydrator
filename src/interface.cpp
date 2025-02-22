@@ -5,8 +5,6 @@
 #include <settings.h>
 #include <wifi_manager.h>
 
-bool isConfigExists = false;
-
 void startInterface(AsyncWebServer &server)
 {
     server.on("/", HTTP_GET,
@@ -23,18 +21,19 @@ void startInterface(AsyncWebServer &server)
     });
 
     server.on("/get_config", HTTP_GET, [](AsyncWebServerRequest *request) {
-        String response = "{\"interval\": " + String(INTERVAL_SEC) + ", \"duration\": " + String(DURATION_SEC) + "}";
+        String response =
+            "{\"interval\": " + String(SPILL_INTERVAL_SEC) + ", \"duration\": " + String(SPILL_DURATION_SEC) + "}";
         request->send(200, "application/json", response);
     });
 
-    server.on("/reset_config", HTTP_POST, [](AsyncWebServerRequest *request) {
+    server.on("/reset_config", HTTP_DELETE, [](AsyncWebServerRequest *request) {
         if (deleteDeviceConfig())
             request->send(200, "text/plain", "Config has been reset!");
         else
             request->send(404, "text/plain", "Config was not found!");
     });
 
-    server.on("/reset_sifi", HTTP_POST, [](AsyncWebServerRequest *request) {
+    server.on("/reset_sifi", HTTP_DELETE, [](AsyncWebServerRequest *request) {
         if (deleteWiFiConfig())
             request->send(200, "text/plain", "Wifi config has been reset! Device will be restarted");
         else
@@ -48,8 +47,8 @@ void startInterface(AsyncWebServer &server)
 
 void saveDeviceConfig(const String &interval, const String &duration)
 {
-    INTERVAL_SEC = interval.toInt();
-    DURATION_SEC = duration.toInt();
+    SPILL_INTERVAL_SEC = interval.toInt();
+    SPILL_DURATION_SEC = duration.toInt();
     File configFile = LittleFS.open(DEVICE_SETTINGS_PATH, "w");
     if (!configFile)
     {
@@ -60,28 +59,29 @@ void saveDeviceConfig(const String &interval, const String &duration)
     configFile.print("interval=" + interval + '\n');
     configFile.print("duration=" + duration + '\n');
     configFile.close();
-    DEVICE_CONFIGURED = true;
+    DEVICE_CONFIGURED = ConfigState::CONFIGURED;
     Serial.println("Configuration saved");
 }
 
 bool deleteDeviceConfig()
 {
+    DEVICE_CONFIGURED = ConfigState::UNCONFIGURED;
     return LittleFS.remove(DEVICE_SETTINGS_PATH);
 }
 
-void loadDeviceConfig()
+bool loadDeviceConfig()
 {
     if (!LittleFS.exists(DEVICE_SETTINGS_PATH))
     {
         Serial.println("Config file not found, using defaults");
-        return;
+        return false;
     }
 
     File configFile = LittleFS.open(DEVICE_SETTINGS_PATH, "r");
     if (!configFile)
     {
         Serial.println("Failed to open config file for reading");
-        return;
+        return false;
     }
 
     while (configFile.available())
@@ -90,15 +90,16 @@ void loadDeviceConfig()
         line.trim();
         if (line.startsWith("interval="))
         {
-            INTERVAL_SEC = line.substring(9).toInt();
+            SPILL_INTERVAL_SEC = line.substring(9).toInt();
         }
         else if (line.startsWith("duration="))
         {
-            DURATION_SEC = line.substring(9).toInt();
+            SPILL_DURATION_SEC = line.substring(9).toInt();
         }
     }
 
     configFile.close();
-    DEVICE_CONFIGURED = true;
+    DEVICE_CONFIGURED = ConfigState::LOADED;
     Serial.println("Configuration loaded");
+    return true;
 }

@@ -25,13 +25,8 @@ void startWizard(AsyncWebServer &server)
     Serial.println("Setting up Wi-Fi Wizard...");
     WiFi.scanNetworks(true);
 
-    server.onNotFound([](AsyncWebServerRequest *request) { request->redirect("/"); });
-
     server.on("/", HTTP_GET,
               [](AsyncWebServerRequest *request) { request->send(LittleFS, "/www/wizard.html", "text/html"); });
-
-    server.on("/style.css", HTTP_GET,
-              [](AsyncWebServerRequest *request) { request->send(LittleFS, "/www/style.css", "text/css"); });
 
     // Wi-Fi scan
     server.on("/start_scan", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -54,14 +49,25 @@ void startWizard(AsyncWebServer &server)
         {
             _isWifiScanning = false;
             int n = WiFi.scanComplete();
+
+            WiFiNetwork networksArray[n];
+
+            for (int i = 0; i < n; i++) {
+                networksArray[i].ssid = WiFi.SSID(i);
+                networksArray[i].rssi = WiFi.RSSI(i);
+            }
+
+            std::sort(networksArray, networksArray + n, [](WiFiNetwork a, WiFiNetwork b) {
+                return a.rssi > b.rssi;
+            });
+
             String networks = "{\"status\":\"done\", \"networks\":[";
-            for (int i = 0; i < n; i++)
-            {
-                networks += "{\"ssid\":\"" + WiFi.SSID(i) + "\",\"rssi\":" + String(WiFi.RSSI(i)) + "}";
-                if (i < n - 1)
-                    networks += ",";
+            for (int i = 0; i < n; i++) {
+                networks += "{\"ssid\":\"" + networksArray[i].ssid + "\",\"rssi\":" + String(networksArray[i].rssi) + "}";
+                if (i < n - 1) networks += ",";
             }
             networks += "]}";
+
             request->send(200, "application/json", networks);
         }
         else
@@ -86,12 +92,13 @@ void tickWizard()
     if (isWizardStarted)
     {
         unsigned long currentMillis = millis();
-        // if (currentMillis - _lastMillisDiode >= 700) {
-        //   _lastMillisDiode = currentMillis;
-        //   digitalWrite(LED_BUILTIN, LOW);
-        //   delay(100);
-        //   digitalWrite(LED_BUILTIN, HIGH);
-        // }
+        if (currentMillis - _lastMillisDiode >= 700)
+        {
+            _lastMillisDiode = currentMillis;
+            digitalWrite(LED_BUILTIN, LOW);
+            delay(100);
+            digitalWrite(LED_BUILTIN, HIGH);
+        }
         if (currentMillis - _lastMillisDns >= 200)
         {
             _lastMillisDns = currentMillis;
