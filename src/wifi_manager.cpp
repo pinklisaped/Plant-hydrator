@@ -8,6 +8,7 @@ String _wizardWifiSSID;
 String _wizardWifiPassword;
 bool _connectingProcess = false;
 bool _rebootESP = false;
+bool _needSaveOnConnect = true;
 
 bool checkAuth()
 {
@@ -29,6 +30,7 @@ bool loadWiFiConfig()
 {
     if (LittleFS.exists(WIFI_SETTINGS_PATH))
     {
+        _needSaveOnConnect = false;
         Serial.println("Load wifi config");
         File file = LittleFS.open(WIFI_SETTINGS_PATH, "r");
         String ssid = file.readStringUntil('\n');
@@ -49,7 +51,7 @@ void enableAPMode(const IPAddress &address)
     WiFi.mode(WIFI_AP_STA);
     WiFi.softAPConfig(address, address, IPAddress(255, 255, 255, 0));
     WiFi.softAP(DEVICE_NAME, wifi_pass);
-    Serial.println("WiFi start " + String(DEVICE_NAME) + " / " + wifi_pass);
+    Serial.println("WiFi start:\n" + String(DEVICE_NAME) + " / " + wifi_pass);
 }
 
 void beginConnectWiFi(const String &ssid, const String &password, bool reboot)
@@ -66,15 +68,16 @@ void connectWiFi()
         return;
     WiFi.mode(WIFI_STA);
     WiFi.begin(_wizardWifiSSID, _wizardWifiPassword);
-    Serial.println("Connecting to WiFi..." + _wizardWifiSSID + " " + _wizardWifiPassword);
+    Serial.println("Connecting to WiFi..." + _wizardWifiSSID);
 
-    int8_t status = WiFi.waitForConnectResult(20000);
+    int8_t status = WiFi.waitForConnectResult(15000UL);
     if (status == WL_CONNECTED)
     {
         Serial.println("WiFi connected!");
         Serial.print("IP Address: ");
         Serial.println(WiFi.localIP());
-        saveWiFiConfig(_wizardWifiSSID, _wizardWifiPassword);
+        if (_needSaveOnConnect)
+            saveWiFiConfig(_wizardWifiSSID, _wizardWifiPassword);
         if (_rebootESP)
             ESP.restart();
         _connectingProcess = false;

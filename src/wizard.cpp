@@ -103,7 +103,7 @@ void tickWizard()
         {
             _lastMillisDns = currentMillis;
             dnsServer.processNextRequest();
+            connectWiFi();
         }
-        connectWiFi();
     }
 }
