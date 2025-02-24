@@ -33,7 +33,7 @@ void startInterface(AsyncWebServer &server)
             request->send(404, "text/plain", "Config was not found!");
     });
 
-    server.on("/reset_sifi", HTTP_DELETE, [](AsyncWebServerRequest *request) {
+    server.on("/reset_wifi", HTTP_DELETE, [](AsyncWebServerRequest *request) {
         if (deleteWiFiConfig())
             request->send(200, "text/plain", "Wifi config has been reset! Device will be restarted");
         else
