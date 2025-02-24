@@ -28,21 +28,29 @@ bool deleteWiFiConfig()
 
 bool loadWiFiConfig()
 {
-    if (LittleFS.exists(WIFI_SETTINGS_PATH))
+    if (!LittleFS.exists(WIFI_SETTINGS_PATH))
     {
-        _needSaveOnConnect = false;
-        Serial.println("Load wifi config");
-        File file = LittleFS.open(WIFI_SETTINGS_PATH, "r");
-        String ssid = file.readStringUntil('\n');
-        String pass = file.readStringUntil('\n');
-        file.close();
-
-        WiFi.hostname(DEVICE_NAME);
-        beginConnectWiFi(ssid, pass);
-        connectWiFi();
-        return WiFi.isConnected();
+        Serial.println("Wifi config not found, using defaults");
+        return false;
     }
-    return false;
+
+    File file = LittleFS.open(WIFI_SETTINGS_PATH, "r");
+    if (!file)
+    {
+        Serial.println("Failed to open Wifi config file for reading");
+        return false;
+    }
+
+    _needSaveOnConnect = false;
+    Serial.println("Load wifi config");
+    String ssid = file.readStringUntil('\n');
+    String pass = file.readStringUntil('\n');
+    file.close();
+
+    WiFi.hostname(DEVICE_NAME);
+    beginConnectWiFi(ssid, pass);
+    connectWiFi();
+    return WiFi.isConnected();
 }
 
 void enableAPMode(const IPAddress &address)

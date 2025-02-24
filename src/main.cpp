@@ -53,6 +53,7 @@ void setup()
     Serial.begin(115200); // COM init
     pinMode(SIGNAL_PIN, OUTPUT);
     pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, LOW);
     pinMode(UNSLEEP_PIN, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(UNSLEEP_PIN), btnUnsleep, FALLING);
 
@@ -78,16 +79,16 @@ void setup()
     // Run wizard
     if (!loadWiFiConfig())
     {
-        Serial.println("Load wizard.");
+        Serial.println("Load wizard...");
         startWizard(server);
     }
     else
     {
-        Serial.println("Load interface.");
+        Serial.println("Load interface...");
         if (loadDeviceConfig())
         {
             minStartTimeMs = 5000;
-            minSleepTimeMs = minSleepTimeMs > 0 ? minSleepTimeMs : 5000;
+            minSleepTimeMs = 6000;
         }
         startInterface(server);
     }
@@ -138,10 +139,16 @@ void loop()
 
 void spill(uint16_t duration_sec)
 {
-    forcedSpill = true;
     Serial.println("Spill " + String(duration_sec) + " sec");
     digitalWrite(SIGNAL_PIN, HIGH);
-    delay(duration_sec * 1000);
+
+    for (uint32_t i = 0; i < duration_sec; i++)
+    {
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(250);
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(750);
+    }
     digitalWrite(SIGNAL_PIN, LOW);
     forcedSpill = false;
 }

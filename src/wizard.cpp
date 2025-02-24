@@ -52,19 +52,21 @@ void startWizard(AsyncWebServer &server)
 
             WiFiNetwork networksArray[n];
 
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < n; i++)
+            {
                 networksArray[i].ssid = WiFi.SSID(i);
                 networksArray[i].rssi = WiFi.RSSI(i);
             }
 
-            std::sort(networksArray, networksArray + n, [](WiFiNetwork a, WiFiNetwork b) {
-                return a.rssi > b.rssi;
-            });
+            std::sort(networksArray, networksArray + n, [](WiFiNetwork a, WiFiNetwork b) { return a.rssi > b.rssi; });
 
             String networks = "{\"status\":\"done\", \"networks\":[";
-            for (int i = 0; i < n; i++) {
-                networks += "{\"ssid\":\"" + networksArray[i].ssid + "\",\"rssi\":" + String(networksArray[i].rssi) + "}";
-                if (i < n - 1) networks += ",";
+            for (int i = 0; i < n; i++)
+            {
+                networks +=
+                    "{\"ssid\":\"" + networksArray[i].ssid + "\",\"rssi\":" + String(networksArray[i].rssi) + "}";
+                if (i < n - 1)
+                    networks += ",";
             }
             networks += "]}";
 
@@ -79,7 +81,7 @@ void startWizard(AsyncWebServer &server)
     server.on("/save_wifi", HTTP_POST, [](AsyncWebServerRequest *request) {
         String ssid = request->getParam("ssid", true)->value();
         String pass = request->getParam("password", true)->value();
-        request->send(200, "text/html", "Please wait, when device are connecting...");
+        request->send(200, "text/html", "Please wait, when device is connecting...");
 
         beginConnectWiFi(ssid, pass, true);
     });
