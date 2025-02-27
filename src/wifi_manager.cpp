@@ -30,19 +30,19 @@ bool loadWiFiConfig()
 {
     if (!LittleFS.exists(WIFI_SETTINGS_PATH))
     {
-        Serial.println("Wifi config not found, using defaults");
+        DEBUG("Wifi config not found, using defaults");
         return false;
     }
 
     File file = LittleFS.open(WIFI_SETTINGS_PATH, "r");
     if (!file)
     {
-        Serial.println("Failed to open Wifi config file for reading");
+        DEBUG("Failed to open Wifi config file for reading");
         return false;
     }
 
     _needSaveOnConnect = false;
-    Serial.println("Load wifi config");
+    DEBUG("Load wifi config");
     String ssid = file.readStringUntil('\n');
     String pass = file.readStringUntil('\n');
     file.close();
@@ -59,7 +59,7 @@ void enableAPMode(const IPAddress &address)
     WiFi.mode(WIFI_AP_STA);
     WiFi.softAPConfig(address, address, IPAddress(255, 255, 255, 0));
     WiFi.softAP(DEVICE_NAME, wifi_pass);
-    Serial.println("WiFi start:\n" + String(DEVICE_NAME) + " / " + wifi_pass);
+    DEBUG("WiFi start:\n" + String(DEVICE_NAME) + " / " + wifi_pass);
 }
 
 void beginConnectWiFi(const String &ssid, const String &password, bool reboot)
@@ -76,14 +76,14 @@ void connectWiFi()
         return;
     WiFi.mode(WIFI_STA);
     WiFi.begin(_wizardWifiSSID, _wizardWifiPassword);
-    Serial.println("Connecting to WiFi..." + _wizardWifiSSID);
+    DEBUG("Connecting to WiFi..." + _wizardWifiSSID);
 
     int8_t status = WiFi.waitForConnectResult(15000UL);
     if (status == WL_CONNECTED)
     {
-        Serial.println("WiFi connected!");
+        DEBUG("WiFi connected!");
         Serial.print("IP Address: ");
-        Serial.println(WiFi.localIP());
+        DEBUG(WiFi.localIP());
         if (_needSaveOnConnect)
             saveWiFiConfig(_wizardWifiSSID, _wizardWifiPassword);
         if (_rebootESP)
@@ -93,10 +93,10 @@ void connectWiFi()
     }
     else if (status == WL_CONNECT_FAILED)
     {
-        Serial.println("Connection failed. Check credentials.");
+        DEBUG("Connection failed. Check credentials.");
     }
 
-    Serial.println("Failed to connect to WiFi. Returning to AP mode.");
+    DEBUG("Failed to connect to WiFi. Returning to AP mode.");
     LittleFS.remove(WIFI_SETTINGS_PATH);
     enableAPMode();
 
@@ -110,10 +110,10 @@ bool endConnectWiFi()
 
 void saveWiFiConfig(const String &ssid, const String &password)
 {
-    Serial.println("Save wifi config");
+    DEBUG("Save wifi config");
     File file = LittleFS.open(WIFI_SETTINGS_PATH, "w");
     file.print(ssid + '\n');
     file.print(password + '\n');
     file.close();
-    Serial.println("Wifi config saved!");
+    DEBUG("Wifi config saved!");
 }

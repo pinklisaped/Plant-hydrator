@@ -52,7 +52,7 @@ void saveDeviceConfig(const String &interval, const String &duration)
     File configFile = LittleFS.open(DEVICE_SETTINGS_PATH, "w");
     if (!configFile)
     {
-        Serial.println("Failed to open config file for writing");
+        DEBUG("Failed to open config file for writing");
         return;
     }
 
@@ -60,7 +60,7 @@ void saveDeviceConfig(const String &interval, const String &duration)
     configFile.print("duration=" + duration + '\n');
     configFile.close();
     DEVICE_CONFIGURED = ConfigState::CONFIGURED;
-    Serial.println("Configuration saved");
+    DEBUG("Configuration saved");
 }
 
 bool deleteDeviceConfig()
@@ -73,14 +73,14 @@ bool loadDeviceConfig()
 {
     if (!LittleFS.exists(DEVICE_SETTINGS_PATH))
     {
-        Serial.println("Config file not found, using defaults");
+        DEBUG("Config file not found, using defaults");
         return false;
     }
 
     File configFile = LittleFS.open(DEVICE_SETTINGS_PATH, "r");
     if (!configFile)
     {
-        Serial.println("Failed to open config file for reading");
+        DEBUG("Failed to open config file for reading");
         return false;
     }
 
@@ -100,6 +100,6 @@ bool loadDeviceConfig()
 
     configFile.close();
     DEVICE_CONFIGURED = ConfigState::LOADED;
-    Serial.println("Configuration loaded");
+    DEBUG("Configuration loaded");
     return true;
 }

@@ -22,7 +22,7 @@ void startWizard(AsyncWebServer &server)
     dnsServer.start(53, "*", DEVICE_GATEWAY_IP); // DNS spoofing (Only for HTTP)
     enableAPMode();
 
-    Serial.println("Setting up Wi-Fi Wizard...");
+    DEBUG("Setting up Wi-Fi Wizard...");
     WiFi.scanNetworks(true);
 
     server.on("/", HTTP_GET,

@@ -34,7 +34,7 @@ void handleReset()
     {
         if (millis() - pressStart > 10000)
         {
-            Serial.println("Long press detected. Resetting configuration...");
+            DEBUG("Long press detected. Resetting configuration...");
 
             // Delete configs
             LittleFS.remove("/conf/wifi.cfg");
@@ -45,7 +45,7 @@ void handleReset()
             ESP.restart();
         }
     }
-    Serial.println("Short press detected. Reset skipped.");
+    DEBUG("Short press detected. Reset skipped.");
 }
 
 void setup()
@@ -60,7 +60,7 @@ void setup()
     // LittleFS init
     if (!LittleFS.begin())
     {
-        Serial.println("Error mounting LittleFS");
+        DEBUG("Error mounting LittleFS");
         return;
     }
 
@@ -79,12 +79,12 @@ void setup()
     // Run wizard
     if (!loadWiFiConfig())
     {
-        Serial.println("Load wizard...");
+        DEBUG("Load wizard...");
         startWizard(server);
     }
     else
     {
-        Serial.println("Load interface...");
+        DEBUG("Load interface...");
         if (loadDeviceConfig())
         {
             minStartTimeMs = 5000;
@@ -129,7 +129,7 @@ void loop()
         {
             minSleepTimeMs = millis() + SLEEP_DELAY_MS;
             delaySleep = false;
-            Serial.println("Sleep was delayed");
+            DEBUG("Sleep was delayed");
         }
 
         if (minSleepTimeMs <= millis())
@@ -139,7 +139,7 @@ void loop()
 
 void spill(uint16_t duration_sec)
 {
-    Serial.println("Spill " + String(duration_sec) + " sec");
+    DEBUG("Spill " + String(duration_sec) + " sec");
     digitalWrite(SIGNAL_PIN, HIGH);
 
     for (uint32_t i = 0; i < duration_sec; i++)
@@ -155,7 +155,7 @@ void spill(uint16_t duration_sec)
 
 void sleep(uint32_t interval_sec)
 {
-    Serial.println("Go sleep " + String(interval_sec) + " sec");
+    DEBUG("Go sleep " + String(interval_sec) + " sec");
     ESP.deepSleep(interval_sec * 1000000);
 }
 

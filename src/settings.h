@@ -4,6 +4,14 @@
 #include <Arduino.h>
 #include <IPAddress.h>
 
+#define DEBUG_ENABLE
+
+#ifdef DEBUG_ENABLE
+#define DEBUG(x) Serial.println(x)
+#else
+#define DEBUG(x)
+#endif
+
 #define DEVICE_SERIAL "00001"
 #define DEVICE_NAME "ESP Hydrator " DEVICE_SERIAL
 
